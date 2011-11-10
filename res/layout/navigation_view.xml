@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <TextView
+        android:text="From X to Y"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/route_label"/>  
+    <TextView
+        android:text="Distance travelled:"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/distance_travelled_label"/>  
+    <TextView
+        android:text="Distance left:"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/distance_left_label"/>   
+     <TextView
+        android:text="Time left:"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/time_left_label"/> 
+     <TextView
+        android:text="Current speed:"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/speed_label"/> 
+     <TextView
+        android:text="Next direction"
+        android:textSize="15pt"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/direction_label"/>
+
+     <Button
+         android:id="@+id/button1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_weight="1"
+         android:onClick="displayJourneyOverView"
+         android:text="@string/journeyOverviewString" />
+
+</LinearLayout>

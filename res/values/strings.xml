@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BikeDirect</string>
+    <string name="howToUseButtonString">How to use</string>
+    <string name="startLocationString">start location</string>
+    <string name="endLocationString">end location</string>
+    <string name="toString">to:</string>
+    <string name="fromString">from:</string>
+    <string name="takeMeThereString">take me there!</string>
+    <string name="iWantToGoString">I want to go...</string>
+    <string name="leftTurnString">left turn</string>
+    <string name="rightTurnString">right turn</string>
+    <string name="slightLeftString">slight left</string>
+    <string name="slightRightButton">slight right</string>
+    <string name="firstExitString">firstExit</string>
+    <string name="secondExitString">second exit</string>
+    <string name="thirdExitString">third exit</string>
+    <string name="fourthExitString">fourth exit</string>
+    <string name="approachingTurnString">approaching turn</string>
+    <string name="goBackString">Go Back</string>
+    <string name="journeyOverviewString">see journey overview</string>
+</resources>
