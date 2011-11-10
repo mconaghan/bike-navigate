@@ -132,6 +132,11 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		{
 			displayRouteNotFoundError();
 		}
+		catch (DirectionException e1) 
+		{
+			// change this to day there was a problem with Google
+			displayRouteNotFoundError();
+		}
     	catch (InterruptedException e)
     	{
     		Utils.makeLog("Navigation thread was interrupted");
@@ -148,7 +153,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
     		TableRow tr = new TableRow(this);
         	tr.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         	TextView tv = new TextView(this);
-        	tv.setText(jl.getFullInstructions());
+        	tv.setText(jl.getSimpleInstruction());
         	tv.setLayoutParams(new LayoutParams(
                     LayoutParams.WRAP_CONTENT,
                     LayoutParams.WRAP_CONTENT));
@@ -169,7 +174,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
         t.start();
     }
     
-    private Journey calculateJourney(String start, String end) throws RouteNotFoundException
+    private Journey calculateJourney(String start, String end) throws RouteNotFoundException, DirectionException
     {
    		GoogleDirectionsQuery q = new GoogleDirectionsQuery(start, end);
    		String directions = q.queryGoogleDirections();
@@ -221,19 +226,11 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	}
 
 	// NAVIGATION ACTIVITY METHODS    
-    public void issueDirection(String s)
+    public void issueDirection(JourneyLeg jl)
     {    	
-    	Utils.makeLog("issueDirection: " + s);
-    	try 
-    	{
-			Direction d = Direction.parseDirection(s);
-			setDirection(d.toString());
-			Vibration.startDirectionVibration(d, vibrator);
-		} 
-    	catch (DirectionException e) 
-    	{
-			Utils.makeLog(e);
-		}    	
+    	Utils.makeLog("issueDirection: " + jl.getSimpleInstruction());
+		setDirection(jl.getSimpleInstruction());
+	    Vibration.startDirectionVibration(jl.getDirection(), vibrator);    	
     }
     
     public void startProximityAlert()

@@ -36,10 +36,11 @@ public enum Direction
 	
 	final static Pattern TURN = Pattern.compile(".*(T|t)urn.*");
 	final static Pattern SLIGHT = Pattern.compile(".*(S|s)light.*");
-	final static Pattern CONTINUE = Pattern.compile(".*(C|c)ontinue.*straight.*");
+	final static Pattern CONTINUE = Pattern.compile(".*(C|c)ontinue.*");
 	final static Pattern EXIT = Pattern.compile(".*(E|e)xit.*");
 	final static Pattern RIGHT = Pattern.compile(".*(R|r)ight.*");
-	final static Pattern LEFT = Pattern.compile(".*(L|l)eft.*");
+	final static Pattern LEFT = Pattern.compile(".*(L|l)eft.*");	
+	final static Pattern TAKE_THE = Pattern.compile(".*(T|t)ake the.*");
 	
 	private int[] vibrationPattern;
 	
@@ -63,6 +64,7 @@ public enum Direction
 		Matcher exitMatcher = EXIT.matcher(s);
 		Matcher leftMatcher = LEFT.matcher(s);
 		Matcher rightMatcher = RIGHT.matcher(s);
+		Matcher takeTheMatcher = TAKE_THE.matcher(s);
 		
 		if (turnMatcher.find())
 		{
@@ -102,9 +104,24 @@ public enum Direction
 		{
 			throw new DirectionException("Not implemented roundabouts yet.");
 		}
+		else if (takeTheMatcher.find())
+		{
+			if (leftMatcher.find())
+			{
+				d = TURN_LEFT;
+			}
+			else if (rightMatcher.find())
+			{
+				d = TURN_RIGHT;				
+			}
+			else
+			{
+				throw new DirectionException("Not implemented roundabouts yet(2).");
+			}
+		}
 		else
 		{
-			throw new DirectionException("Cannot parse direction");
+			d = null;
 		}
 		
 		return d;

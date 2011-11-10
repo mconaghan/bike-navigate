@@ -78,7 +78,7 @@ public class NavigationThread implements Runnable
        	 		{
        	 			if (distanceToEndpoint < ISSUE_DIRECTION_DISTANCE)
        	 			{
-       	 				na.issueDirection(currentLeg.getFullInstructions());
+       	 				na.issueDirection(currentLeg);
        	 				issuedDirection = true;
        	 			}        		         		 
        	 		}

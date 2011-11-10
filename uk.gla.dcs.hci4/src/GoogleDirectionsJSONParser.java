@@ -14,7 +14,7 @@ import org.json.JSONTokener;
 public class GoogleDirectionsJSONParser implements DirectionParser
 {
 
-	public Journey parseJSONDirections(String input)
+	public Journey parseJSONDirections(String input) throws DirectionException
 	{		
 		LinkedList<JourneyLeg> directions = new LinkedList<JourneyLeg>();
 		int totalDistance = 0;
@@ -42,6 +42,9 @@ public class GoogleDirectionsJSONParser implements DirectionParser
 			
 			JSONArray steps = ((JSONObject)legs.get(0)).getJSONArray("steps");
 			
+			JourneyLeg lastJourneyLeg = null;
+			JourneyLeg journeyLeg = null;
+			
 			for (int ii = 0; ii < steps.length(); ii++)
 			{
 				JSONObject step = (JSONObject)steps.get(ii);
@@ -53,8 +56,16 @@ public class GoogleDirectionsJSONParser implements DirectionParser
 				
 				CoOrdinate startPoint = new CoOrdinate(start.getString("lng"), start.getString("lat"));
 				CoOrdinate endPoint = new CoOrdinate(end.getString("lng"), end.getString("lat"));
+								
+				journeyLeg = new JourneyLeg(distanceMetres, startPoint, endPoint, instructions);
+				directions.add(journeyLeg);		
 				
-				directions.add(new JourneyLeg(distanceMetres, startPoint, endPoint, instructions));				
+				if (lastJourneyLeg != null)
+				{
+					lastJourneyLeg.setNextDirection(journeyLeg.getDirection());
+				}
+				
+				lastJourneyLeg = journeyLeg;
 			}
 		} 
 		catch (JSONException e) 

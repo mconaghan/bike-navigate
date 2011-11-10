@@ -1,5 +1,6 @@
 package interfaces;
 
+import src.DirectionException;
 import src.Journey;
 
 public interface DirectionParser 
@@ -9,6 +10,6 @@ public interface DirectionParser
 	 * @param data The data containing the details of the journey.
 	 * @return a journey.
 	 */
-	public Journey parseJSONDirections(String data);
+	public Journey parseJSONDirections(String data)  throws DirectionException;
 
 }
