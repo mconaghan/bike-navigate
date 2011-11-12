@@ -1,15 +1,8 @@
 package test;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-
 import src.BikeDirectActivity;
 import src.CoOrdinate;
 import src.FileLocationReader;
-import src.Utils;
-import android.content.res.AssetManager;
 import android.test.ActivityInstrumentationTestCase2;
 
 public class FileLocationReaderTest extends ActivityInstrumentationTestCase2<BikeDirectActivity>

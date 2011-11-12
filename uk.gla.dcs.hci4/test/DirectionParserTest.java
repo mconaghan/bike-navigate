@@ -46,16 +46,16 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 		List<JourneyLeg> directions = journey.getLegs();
 		assertEquals(10, directions.size());
 		
-		assertEquals(244, directions.get(0).getDistanceMetres());
-		assertEquals(507, directions.get(1).getDistanceMetres());
-		assertEquals(357, directions.get(2).getDistanceMetres());
-		assertEquals(101, directions.get(3).getDistanceMetres());
-		assertEquals(397, directions.get(4).getDistanceMetres());
-		assertEquals(1127, directions.get(5).getDistanceMetres());
-		assertEquals(785, directions.get(6).getDistanceMetres());
-		assertEquals(7828, directions.get(7).getDistanceMetres());
-		assertEquals(249, directions.get(8).getDistanceMetres());
-		assertEquals(262, directions.get(9).getDistanceMetres());
+		assertEquals(244, directions.get(0).getDistanceLeftMetres());
+		assertEquals(507, directions.get(1).getDistanceLeftMetres());
+		assertEquals(357, directions.get(2).getDistanceLeftMetres());
+		assertEquals(101, directions.get(3).getDistanceLeftMetres());
+		assertEquals(397, directions.get(4).getDistanceLeftMetres());
+		assertEquals(1127, directions.get(5).getDistanceLeftMetres());
+		assertEquals(785, directions.get(6).getDistanceLeftMetres());
+		assertEquals(7828, directions.get(7).getDistanceLeftMetres());
+		assertEquals(249, directions.get(8).getDistanceLeftMetres());
+		assertEquals(262, directions.get(9).getDistanceLeftMetres());
 		
 		//First direction is not understood, expect an exception
 		try
@@ -92,7 +92,7 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 		
 		for (JourneyLeg d : directions)
 		{
-			int dist = d.getDistanceMetres();
+			int dist = d.getDistanceLeftMetres();
 			
 			double calculatedDist = Utils.distFrom(d.getStart(), d.getEnd());
 			
@@ -105,7 +105,7 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 			totalDistance += calculatedDist;
 		}		
 		
-		double totalDiff = totalDistance - journey.getDistance();
+		double totalDiff = totalDistance - journey.getSubsequentLegsDistance();
 		assertEquals(true, totalDiff < 500);
 		assertEquals(true, totalDiff > -500);
 	}

@@ -6,9 +6,10 @@ public interface NavigationActivity
 {
 
 	public void setDirection(String direction);
-	public void issueDirection(JourneyLeg jl);
+	public boolean issueDirection(JourneyLeg jl);
 	public void setDistanceTravelled(String distanceTravelled);
 	public void setDistanceLeft(String distanceLeft);
 	public void setSpeed(String speed);
 	public void startProximityAlert();
+	public void finishJourney();
 }

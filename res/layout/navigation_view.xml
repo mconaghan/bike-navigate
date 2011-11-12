@@ -3,49 +3,46 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+    
+    <TextView
+        android:id="@+id/route_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/nextInstructionString"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
-        android:text="From X to Y"
-        android:textSize="15pt"
+        android:id="@+id/direction_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:id="@+id/route_label"/>  
-    <TextView
-        android:text="Distance travelled:"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/distance_travelled_label"/>  
-    <TextView
-        android:text="Distance left:"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/distance_left_label"/>   
-     <TextView
-        android:text="Time left:"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/time_left_label"/> 
-     <TextView
-        android:text="Current speed:"
-        android:textSize="15pt"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/speed_label"/> 
-     <TextView
         android:text="Next direction"
-        android:textSize="15pt"
+        android:textAppearance="?android:attr/textAppearanceLarge" />  
+
+    <TextView
+        android:id="@+id/distance_left_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:id="@+id/direction_label"/>
+        android:text="@string/leftString"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+     <TextView
+         android:id="@+id/speed_label"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:layout_weight="1"
+         android:text="@string/speedString"
+         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+     <TextView
+         android:id="@+id/distance_travelled_label"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_weight="1"
+         android:text="@string/travelledString"
+         android:textAppearance="?android:attr/textAppearanceLarge" />
 
      <Button
          android:id="@+id/button1"
@@ -54,5 +51,12 @@
          android:layout_weight="1"
          android:onClick="displayJourneyOverView"
          android:text="@string/journeyOverviewString" />
+     <Button
+         android:id="@+id/button2"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_weight="1"
+         android:onClick="readOutJourneyInformation"
+         android:text="@string/readOutJourneyString" />
 
 </LinearLayout>

@@ -6,33 +6,118 @@ import java.util.regex.Pattern;
 public enum Direction 
 {
 
+	ARRIVED(new long[]{Vibration.VERY_LONG_VIBRATION}),
 	CONTINUE_STRAIGHT(null),
-	TURN_RIGHT(new int[]{Vibration.LONG_VIBRATION, 
+	TURN_RIGHT(new long[]{Vibration.NO_WAIT,
+                         Vibration.LONG_VIBRATION, 
 			             Vibration.SHORT_PAUSE, 
 			             Vibration.LONG_VIBRATION, 
 			             Vibration.SHORT_PAUSE, 
 			             Vibration.LONG_VIBRATION}),
-	TURN_LEFT(new int[]{Vibration.LONG_VIBRATION}),
-	SLIGHT_RIGHT(new int[]{Vibration.LONG_VIBRATION, 
+	TURN_LEFT(new long[]{Vibration.NO_WAIT,
+                        Vibration.LONG_VIBRATION}),
+	SLIGHT_RIGHT(new long[]{Vibration.NO_WAIT,
+                           Vibration.LONG_VIBRATION, 
                            Vibration.SHORT_PAUSE, 
                            Vibration.LONG_VIBRATION, 
                            Vibration.SHORT_PAUSE, 
                            Vibration.LONG_VIBRATION,
                            Vibration.SHORT_PAUSE,
                            Vibration.SHORT_VIBRATION}),
-	SLIGHT_LEFT(new int[]{Vibration.LONG_VIBRATION, 
+	SLIGHT_LEFT(new long[]{Vibration.NO_WAIT,
+                          Vibration.LONG_VIBRATION, 
                           Vibration.SHORT_PAUSE, 
-                          Vibration.SHORT_VIBRATION});
-	//TODO
-//	FIRST_EXIT,
-//	SECOND_EXIT,
-//	THIRD_EXIT,
-//	FOURTH_EXIT,
-//	FIFTH_EXIT,
-//	SIXTH_EXIT,
-//	SEVENTH_EXIT,
-//	EIGHT_EXIT,
-//	NINTH_EXIT;
+                          Vibration.SHORT_VIBRATION}),
+	FIRST_EXIT(new long[]{Vibration.NO_WAIT,
+                         Vibration.LONG_VIBRATION}),
+	SECOND_EXIT(new long[]{Vibration.NO_WAIT,
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION}),
+	THIRD_EXIT(new long[]{Vibration.NO_WAIT,
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION}),
+	FOURTH_EXIT(new long[]{Vibration.NO_WAIT,
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION}),
+	FIFTH_EXIT(new long[]{Vibration.NO_WAIT,
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION, 
+                Vibration.SHORT_PAUSE, 
+                Vibration.LONG_VIBRATION}),
+	SIXTH_EXIT(new long[]{Vibration.NO_WAIT,
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION}),
+	SEVENTH_EXIT(new long[]{Vibration.NO_WAIT,
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION, 
+                 Vibration.SHORT_PAUSE, 
+                 Vibration.LONG_VIBRATION}),
+	EIGHT_EXIT(new long[]{Vibration.NO_WAIT,
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION}),
+	NINTH_EXIT(new long[]{Vibration.NO_WAIT,
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION, 
+               Vibration.SHORT_PAUSE, 
+               Vibration.LONG_VIBRATION});
 	
 	final static Pattern TURN = Pattern.compile(".*(T|t)urn.*");
 	final static Pattern SLIGHT = Pattern.compile(".*(S|s)light.*");
@@ -42,14 +127,14 @@ public enum Direction
 	final static Pattern LEFT = Pattern.compile(".*(L|l)eft.*");	
 	final static Pattern TAKE_THE = Pattern.compile(".*(T|t)ake the.*");
 	
-	private int[] vibrationPattern;
+	private long[] vibrationPattern;
 	
-	private Direction (int vibrationPattern[])
+	private Direction (long vibrationPattern[])
 	{
 		this.vibrationPattern = vibrationPattern;
 	}
 	
-	public int[] getVibrationPattern()
+	public long[] getVibrationPattern()
 	{
 		return vibrationPattern;
 	}
@@ -126,4 +211,10 @@ public enum Direction
 		
 		return d;
 	}	
+	
+	public String toString()
+	{
+		// Replace underscores with spaces.
+		return this.name().replaceAll("_", " ").toLowerCase();		
+	}
 }

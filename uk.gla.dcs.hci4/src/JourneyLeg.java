@@ -6,7 +6,8 @@ package src;
  */
 public class JourneyLeg 
 {
-	private int distanceMetres;
+	private int distanceLeftMetres;
+	private int totalLegDistance;
 	private CoOrdinate start;
 	private CoOrdinate end;
 	private String fullInstructions;
@@ -18,26 +19,28 @@ public class JourneyLeg
 					  CoOrdinate end, 
 					  String instructions) throws DirectionException
 	{
-		this.distanceMetres = Integer.valueOf(distanceMetres);
+		distanceLeftMetres = Integer.valueOf(distanceMetres);
+		totalLegDistance = this.distanceLeftMetres;
 		this.start = start;
 		this.end = end;
-		this.fullInstructions = instructions;
-		this.direction = Direction.parseDirection(instructions);
+		fullInstructions = instructions;
+		direction = Direction.parseDirection(instructions);
 	}
 	
-	public int getDistanceMetres() {return distanceMetres;}
+	public int getDistanceLeftMetres() {return distanceLeftMetres;}
+	public int getTotalDistance() {return totalLegDistance;}
+	public int getDistanceTravelledMetres() {return (totalLegDistance - distanceLeftMetres);}
 	public CoOrdinate getStart() {return start;}
 	public CoOrdinate getEnd() {return end;}
 	public String getFullInstructions() {return fullInstructions;}
+	public Direction getNextDirection(){return nextDirection;}
 	public Direction getDirection(){return direction;}
 	
 	public String getSimpleInstruction()
 	{
-		return "Go " + distanceMetres + "m and then " + (nextDirection == null ? " you're there!" : nextDirection.toString());
+		return "Go " + distanceLeftMetres + "m and then " + (nextDirection == null ? " you're there!" : nextDirection.toString());
 	}
 	
-	public void setNextDirection(Direction d)
-	{
-		nextDirection = d;
-	}
+	public void setNextDirection(Direction d){nextDirection = d;}
+	public void setDistanceLeft(int distance){distanceLeftMetres = distance;};
 }

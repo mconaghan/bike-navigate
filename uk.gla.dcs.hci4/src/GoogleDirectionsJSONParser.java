@@ -70,8 +70,7 @@ public class GoogleDirectionsJSONParser implements DirectionParser
 		} 
 		catch (JSONException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Utils.makeLog(e);
 		}
 		
 		return new Journey(totalDistance, directions);		

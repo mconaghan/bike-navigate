@@ -19,4 +19,9 @@
     <string name="approachingTurnString">approaching turn</string>
     <string name="goBackString">Go Back</string>
     <string name="journeyOverviewString">see journey overview</string>
+    <string name="readOutJourneyString">read out journey information</string>
+    <string name="nextInstructionString">Next instruction:</string>
+    <string name="speedString">speed:</string>
+    <string name="leftString">left:</string>
+    <string name="travelledString">travelled:</string>
 </resources>

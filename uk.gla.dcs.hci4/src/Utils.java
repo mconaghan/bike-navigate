@@ -20,12 +20,11 @@ public class Utils
 	 * 
 	 * Copy of code from http://stackoverflow.com/questions/120283/working-with-latitude-longitude-values-in-java,
 	 * accessed on 24/10/2011. 
-	 * TODO document these
 	 * @param lat1
 	 * @param lng1
 	 * @param lat2
 	 * @param lng2
-	 * @return
+	 * @return distance in metres
 	 */
 	public static double distFrom(double lat1, double lng1, double lat2, double lng2) 
 	{		
@@ -41,6 +40,12 @@ public class Utils
 	    return dist;
 	}
 	
+	/**
+	 * 
+	 * @param from
+	 * @param to
+	 * @return distance in metres
+	 */
 	public static double distFrom(CoOrdinate from, CoOrdinate to)
 	{
 		return distFrom(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
@@ -112,8 +117,7 @@ public class Utils
 		}
 		catch (IOException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Utils.makeLog(e);
 		}
 		
 		return (String[]) lines.toArray();

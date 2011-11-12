@@ -30,4 +30,16 @@ public class CoOrdinate
 	{
 		return latitude;
 	}
+	
+	public boolean veryCloseTo(CoOrdinate c)
+	{
+		double dist = Utils.distFrom(this, c);
+		
+		if (dist <= 5)
+		{
+			return true;
+		}
+		
+		return false;
+	}
 }

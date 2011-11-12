@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -17,9 +18,9 @@ public class GoogleDirectionsQuery
 	private String to;
 	
 	public GoogleDirectionsQuery(String from, String to)
-	{
-		this.from = from;
-		this.to = to;
+	{		
+		this.from = URLEncoder.encode(from);
+		this.to = URLEncoder.encode(to);
 	}
 	
     public String queryGoogleDirections() throws RouteNotFoundException
@@ -100,8 +101,7 @@ public class GoogleDirectionsQuery
                     e.printStackTrace();
                 }
             }
-        }
-		
+        }		
 		return responseString;
     }
 }

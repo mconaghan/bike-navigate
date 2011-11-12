@@ -4,11 +4,13 @@ import android.os.Vibrator;
 
 public class Vibration implements Runnable
 {
-	public static int LONG_VIBRATION  = 1000;
-	public static int SHORT_VIBRATION = 500;
-	public static int SHORT_PAUSE     = -500;
+	public static long NO_WAIT              = 0;
+	public static long VERY_LONG_VIBRATION  = 10000;
+	public static long LONG_VIBRATION       = 1000;
+	public static long SHORT_VIBRATION      = 500;
+	public static long SHORT_PAUSE          = 500;
 	
-	private final int[] pattern;
+	private final long[] pattern;
 	private final Vibrator vibrator;
 	private final boolean loopForever;
 	
@@ -36,7 +38,7 @@ public class Vibration implements Runnable
 		{
 			Thread t = new Thread(this);
 			t.start();
-		}		
+		}	
 	}
 		
 	/**
@@ -55,51 +57,35 @@ public class Vibration implements Runnable
 		}
 		else
 		{
-			pattern = new int[]{SHORT_VIBRATION, SHORT_PAUSE};
+			// Android doesn't cope well with sleeps
+			pattern = new long[]{SHORT_PAUSE, SHORT_VIBRATION, SHORT_PAUSE, SHORT_VIBRATION, SHORT_PAUSE, 
+					            SHORT_VIBRATION, SHORT_PAUSE, SHORT_VIBRATION, SHORT_PAUSE, 
+					            SHORT_VIBRATION, SHORT_PAUSE, SHORT_VIBRATION};
 			vibrator = v;
 			loopForever = true;
+			proximityAlert = this;
 			
 			Thread t = new Thread(this);
-			t.start();
-			proximityAlert = this;
+			t.start();			
 		}		
 	}
 	
 	public static void stopProximityAlert()
 	{
+		Utils.makeLog("Proximity alert cancelled");
 		proximityAlert = null;
 	}
 
 	@Override
 	public void run() 
-	{
-		int ii = 0;		
+	{	
+		boolean doLoop = true;
 		
-		while((ii < pattern.length) && (proximityAlert == this))
+		while(doLoop)
 		{
-			if (pattern[ii] > 0)
-			{
-				Utils.makeLog("Vibrating for " + pattern[ii] + " milliseconds");
-				vibrator.vibrate(pattern[ii]);
-			}
-			else
-			{
-				try 
-				{
-					Thread.sleep(-(pattern[ii]));
-				} 
-				catch (InterruptedException e) 
-				{
-					Utils.makeLog("Vibration thread was interrupted");
-				}
-			}	
-			ii++;
+			vibrator.vibrate(pattern, -1);
 			
-			// If we are to loop forever then go pack to the start of the pattern
-			if (loopForever && ii == pattern.length)
-			{
-				ii = 0;
-			}
+			doLoop = loopForever && (proximityAlert == this);
 		}		
 	}
 }

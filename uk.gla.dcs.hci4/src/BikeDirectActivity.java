@@ -1,15 +1,30 @@
 /* TODO
- * Remove formatting from instructions
- * Implement distance travlled
- * Put speed in km/h
- * Make text visible on start screen
- * Fix instruction order - currently don't get instruction until after passed the end point
- * Tweak distance values, being there needs  to be 10m
- * Add view to see overview of directions
- * Add button to read out position and how long left
+ * Make text visible on start screen (only android 4)
+ * Provide ability to use current location
+ * Going to journey screen then back to navigation screen breaks things.
+ * provide option to start again
+ * break up this class
+ * roundabouts
+ * tidy up code/add comments
+ * 
+ * FROM REAL USE:
+ * need to increase values to 100/50/20, and be clever if leg is < 100/50
+ * Get verbal instruction twice
+ * App leaves GPS running
+ * putting app in background and bringing it back to different screen (same problem as goign to overview screen?)
+ * proximity alert not issued until after the turn
+ * 
+ * WIBNI
+ * Recalculate the journey.
+ * 
+ * Report 
+ * talk about threads
+ * battery life
  */
 
 package src;
+
+import java.util.Locale;
 
 import interfaces.DirectionParser;
 import interfaces.LocationReader;
@@ -20,12 +35,15 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TableLayout;
@@ -33,8 +51,9 @@ import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 
-public class BikeDirectActivity extends Activity implements LocationListener, LocationReader, NavigationActivity
+public class BikeDirectActivity extends Activity implements LocationListener, LocationReader, NavigationActivity, OnInitListener
 {
+	private static final int MY_DATA_CHECK_CODE = 0;
 	Location gLocation;
 	LocationManager gLocationManager;
 	
@@ -46,6 +65,17 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
     
     Vibrator vibrator;
     
+    private TextToSpeech tts;
+    private boolean ttsReady = false;
+    
+    private static Journey journey;
+    
+    private final String PROXIMITY_ALERT_STRING = "You are approaching the next turn";
+    
+    // Pop-up dialog types
+    private final int ROUTE_CANNOT_BE_FOUND_ERROR = 0;
+    private final int JOURNEY_FINISHED = 1;
+    
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -55,32 +85,79 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
         // By default Network IO is disabled on main thread.  Nothing else to do
         // while waiting for Google, so disable this and just block waiting for
         // directions.
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-        .permitNetwork()
-        .build());
+        try
+        {
+        	StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+        	.permitNetwork()
+            .build());
+        	
+        }
+        catch (NoClassDefFoundError e)
+        {
+        	//Older than Gingerbread, can't do this 
+        }
+        
         setContentView(R.layout.start_view);      
         
         gLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         gLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        
+        // Check TTS is installed
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
 		
+    }    
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) 
+    {
+        if (requestCode == MY_DATA_CHECK_CODE) 
+        {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) 
+            {
+                // success, create the TTS instance
+                tts = new TextToSpeech(this, this);
+            } 
+            else 
+            {
+                // missing data, install it
+                Intent installIntent = new Intent();
+                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installIntent);
+            }
+        }
     }
     
     @Override
     protected Dialog onCreateDialog(int id)
-    {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Route cannot be found, please try again")
-		       .setCancelable(false)
-		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-		           public void onClick(DialogInterface dialog, int id) {
-		                dialog.cancel();
-		           }
-		       });
-		AlertDialog dialog = builder.create();
+    {    	
+    	String message = "";
+    	
+    	switch (id)
+    	{
+    	case (JOURNEY_FINISHED):
+    		message = "You have finished your journey";break;
+    		
+    	case (ROUTE_CANNOT_BE_FOUND_ERROR):
+    		message = "Route cannot be found, please try again";break;
+    		
+    	default:
+    		throw new RuntimeException("Unknown dialog ID: " + id);
+    		
+    	}
+    	
+  		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setMessage(message)
+    		       .setCancelable(false)
+    		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+    		           public void onClick(DialogInterface dialog, int id) {
+    		                dialog.cancel();
+    		           }
+    		       });
 		
-		return dialog;
+		return builder.create();
     }
     
     public void startNavigation(View v)
@@ -99,9 +176,9 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
     	if (endText != null)
     	{
     		endString = endText.getText().toString();
-    	}    	       	
+    	}    	      	
 
-    	Journey journey = null;
+
 		try 
 		{
 	    	// Calculate the journey
@@ -114,17 +191,14 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 			
 			// Switch to the navigation view
 	    	setContentView(R.layout.navigation_view);
-	    	final TextView routeLabel = (TextView)findViewById(R.id.route_label);
 	        
 	        distanceLeftLabel = (TextView)findViewById(R.id.distance_left_label);
-	        distanceTravelledLabel = (TextView)findViewById(R.id.distance_travelled_label);
 	        directionLabel = (TextView)findViewById(R.id.direction_label);
 	        speedLabel = (TextView)findViewById(R.id.speed_label);
+	        distanceTravelledLabel = (TextView)findViewById(R.id.distance_travelled_label);
 			
 			// And display the results
-	        routeLabel.setText("From " + startString + " to " + endString);
-	    	distanceLeftLabel.setText("Distance left: " + String.valueOf(journey.getDistance()));
-	    	distanceTravelledLabel.setText("Distance travelled: 0");			
+	    	distanceLeftLabel.setText("Distance left: " + String.valueOf(journey.getSubsequentLegsDistance()));	
 	    	
 	    	startNavigationThread(journey, this);
 		} 
@@ -226,17 +300,41 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	}
 
 	// NAVIGATION ACTIVITY METHODS    
-    public void issueDirection(JourneyLeg jl)
+    public boolean issueDirection(JourneyLeg jl)
     {    	
-    	Utils.makeLog("issueDirection: " + jl.getSimpleInstruction());
-		setDirection(jl.getSimpleInstruction());
-	    Vibration.startDirectionVibration(jl.getDirection(), vibrator);    	
+    	boolean issuedCommand = true;
+    	Direction d = jl.getNextDirection();
+    	
+    	if (d.equals(Direction.CONTINUE_STRAIGHT))
+    	{
+    		issuedCommand = false;
+    	}
+    	else
+    	{
+    		Utils.makeLog("issueDirection: " + jl.getSimpleInstruction());
+        	speak(jl.getNextDirection().toString());
+    		setDirection(jl.getSimpleInstruction());
+    	    Vibration.startDirectionVibration(jl.getNextDirection(), vibrator); 
+    	}
+    	
+    	return issuedCommand;	    
     }
     
     public void startProximityAlert()
     {
     	Utils.makeLog("startProximityAlert");
+    	speak(PROXIMITY_ALERT_STRING);
     	Vibration.startProximityAlert(vibrator);
+    }
+    
+    public void finishJourney()
+    {
+    	runOnUiThread(new Runnable(){ public void run()
+    		{
+    			Vibration.startDirectionVibration(Direction.ARRIVED, vibrator);
+        		displayStartView(null);
+        		showDialog(JOURNEY_FINISHED);
+    		}});    	
     }
     
 	@Override
@@ -282,18 +380,83 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	
 	private void displayRouteNotFoundError()
 	{
-		showDialog(0);//TODO remove magic number
+		showDialog(ROUTE_CANNOT_BE_FOUND_ERROR);
 	}
 	
 	//HELP VIEW METHODS
-	public void demoLeftTurn(View v)   {Vibration.startDirectionVibration(Direction.TURN_LEFT,    vibrator);}	
-	public void demoRightTurn(View v)  {Vibration.startDirectionVibration(Direction.TURN_RIGHT,   vibrator);}
-	public void demoSlightLeft(View v) {Vibration.startDirectionVibration(Direction.SLIGHT_LEFT,  vibrator);}	
-	public void demoSlightRight(View v){Vibration.startDirectionVibration(Direction.SLIGHT_RIGHT, vibrator);}	
-	//TODO more of these
+	public void demoLeftTurn(View v)   {Vibration.startDirectionVibration(Direction.TURN_LEFT,    vibrator);speak(Direction.TURN_LEFT.toString());}	
+	public void demoRightTurn(View v)  {Vibration.startDirectionVibration(Direction.TURN_RIGHT,   vibrator);speak(Direction.TURN_RIGHT.toString());}
+	public void demoSlightLeft(View v) {Vibration.startDirectionVibration(Direction.SLIGHT_LEFT,  vibrator);speak(Direction.SLIGHT_LEFT.toString());}	
+	public void demoSlightRight(View v){Vibration.startDirectionVibration(Direction.SLIGHT_RIGHT, vibrator);speak(Direction.SLIGHT_RIGHT.toString());}
 	
+	public void demoProximity(View v)
+	{
+		speak(PROXIMITY_ALERT_STRING);
+		
+		Vibration.startProximityAlert(vibrator);
+		Vibration.stopProximityAlert();		
+	}
+	
+	public void demoFirstExit(View v){demoExit(v, 1);}
+	public void demoSecondExit(View v){demoExit(v, 2);}
+	public void demoThirdExit(View v){demoExit(v, 3);}
+	public void demoFourthExit(View v){demoExit(v, 4);}
+	public void demoFifthExit(View v){demoExit(v, 5);}
+	public void demoSixthExit(View v){demoExit(v, 6);}
+	
+	public void demoExit(View v, int exitNumber)
+	{
+		Direction d;
+		
+		switch (exitNumber)
+		{
+			case(1):d = Direction.FIRST_EXIT;break;
+			case(2):d = Direction.SECOND_EXIT;break;
+			case(3):d = Direction.THIRD_EXIT;break;
+			case(4):d = Direction.FOURTH_EXIT;break;
+			case(5):d = Direction.FIFTH_EXIT;break;
+			case(6):d = Direction.SIXTH_EXIT;break;
+			case(7):d = Direction.SEVENTH_EXIT;break;
+			case(8):d = Direction.EIGHT_EXIT;break;
+			case(9):d = Direction.NINTH_EXIT;break;
+		
+			default:
+				throw new RuntimeException("Don't recognise the exit number: " + exitNumber);
+		}
+		
+		Vibration.startDirectionVibration(d, vibrator);
+		speak(d.toString());
+	}
+		
 	//CHANGE VIEW METHODS
 	public void displayJourneyOverView(View v){setContentView(journeyStepsTable);}
-    public void displayHelpView(View v){setContentView(R.layout.help_view);}    
-    public void displayStartView(View v){setContentView(R.layout.start_view);}
+    public void displayHelpView(View v){setContentView(R.layout.help_view);}     
+    public void displayStartView(View v){setContentView(R.layout.start_view);}    	
+    public void displayNavigationView(View v){setContentView(R.layout.navigation_view);}
+
+	@Override
+	//TTS is ready
+	public void onInit(int arg0) 
+	{
+		Utils.makeLog("TTS is ready");
+		tts.setLanguage(Locale.UK);
+		ttsReady = true;
+	}
+	
+	private void speak(String speech)
+	{
+		if (ttsReady)
+		{
+			tts.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
+		}
+		else
+		{
+			Utils.makeLog("Tried to speak before TTS was ready");
+		}
+	}
+	
+	public void readOutJourneyInformation(View v)
+	{
+		speak(journey.getSummary());
+	}
 }
