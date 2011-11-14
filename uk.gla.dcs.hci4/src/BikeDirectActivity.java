@@ -1,21 +1,9 @@
 /* TODO
- * Make text visible on start screen (only android 4)
- * Provide ability to use current location
- * Going to journey screen then back to navigation screen breaks things.
- * provide option to start again
- * break up this class
- * roundabouts
- * tidy up code/add comments
+ * test with kevin's phone version
  * 
  * FROM REAL USE:
- * need to increase values to 100/50/20, and be clever if leg is < 100/50
- * Get verbal instruction twice
- * App leaves GPS running
- * putting app in background and bringing it back to different screen (same problem as goign to overview screen?)
- * proximity alert not issued until after the turn
- * 
- * WIBNI
- * Recalculate the journey.
+ * Get verbal instruction twice (only sometimes)
+ * proximity alert not issued until after the turn??
  * 
  * Report 
  * talk about threads
@@ -23,8 +11,6 @@
  */
 
 package src;
-
-import java.util.Locale;
 
 import interfaces.DirectionParser;
 import interfaces.LocationReader;
@@ -36,14 +22,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.Vibrator;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeech.OnInitListener;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TableLayout;
@@ -51,30 +34,33 @@ import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 
-public class BikeDirectActivity extends Activity implements LocationListener, LocationReader, NavigationActivity, OnInitListener
-{
-	private static final int MY_DATA_CHECK_CODE = 0;
-	Location gLocation;
-	LocationManager gLocationManager;
-	
-	TextView distanceLeftLabel;
-    TextView distanceTravelledLabel;
-    TextView directionLabel;
-    TextView speedLabel;
-    TableLayout journeyStepsTable;
+public class BikeDirectActivity extends Activity implements NavigationActivity
+{	
+	private TextView distanceLeftLabel;
+	private TextView distanceTravelledLabel;
+    private TextView directionLabel;
+    private TextView speedLabel;
+    private TableLayout journeyStepsTable;
     
-    Vibrator vibrator;
+    private Vibrator vibrator;
+    private LocationHandler locationHandler;
     
-    private TextToSpeech tts;
-    private boolean ttsReady = false;
+    private TextToSpeechHandler ttsHandler;
     
     private static Journey journey;
     
     private final String PROXIMITY_ALERT_STRING = "You are approaching the next turn";
+    private final String ARRIVED_AT_DESTINATION_STRING = "You have arrived at your destination";
     
     // Pop-up dialog types
-    private final int ROUTE_CANNOT_BE_FOUND_ERROR = 0;
-    private final int JOURNEY_FINISHED = 1;
+    private final int ROUTE_CANNOT_BE_FOUND_ERROR          = 0;
+    private final int JOURNEY_FINISHED                     = 1;
+    private final int DIRECTION_CANNOT_BE_UNDERSTOOD_ERROR = 2;
+    
+    private String startString;
+    private String endString;
+    
+    private long lastKeyPressTime = 0;
     
 	/** Called when the activity is first created. */
     @Override
@@ -94,60 +80,70 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
         }
         catch (NoClassDefFoundError e)
         {
-        	//Older than Gingerbread, can't do this 
+        	// Older than Gingerbread, can't do this (and no need)
         }
         
+        // Load start view
         setContentView(R.layout.start_view);      
         
-        gLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        gLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        // Start getting location
+        locationHandler = new LocationHandler((LocationManager)getSystemService(Context.LOCATION_SERVICE));
         
+        // Get the vibrator for the phone
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         
-        // Check TTS is installed
-        Intent checkIntent = new Intent();
-        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-        startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
-		
+        // Set-up TTS
+        ttsHandler = new TextToSpeechHandler(this);		
     }    
 
+    /** Called when TTS is loaded. */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) 
     {
-        if (requestCode == MY_DATA_CHECK_CODE) 
-        {
-            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) 
-            {
-                // success, create the TTS instance
-                tts = new TextToSpeech(this, this);
-            } 
-            else 
-            {
-                // missing data, install it
-                Intent installIntent = new Intent();
-                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-                startActivity(installIntent);
-            }
-        }
+    	ttsHandler.init(requestCode, resultCode, data);
     }
     
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) 
+    {
+        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) || (keyCode == KeyEvent.KEYCODE_VOLUME_UP)) 
+        {
+        	Utils.makeLog("Detected volume key press");
+        	
+        	if (System.currentTimeMillis() - lastKeyPressTime < 500);
+        	{        		
+        		Utils.makeLog("Detected two volume key presses - reading out journey information");
+                readOutJourneyInformation();
+        	}
+        	
+        	lastKeyPressTime = System.currentTimeMillis();        	
+        }
+
+        return super.onKeyLongPress(keyCode, event);
+    }
+    
+    @Override
+    /** Called to create a dialog pop-up **/
     protected Dialog onCreateDialog(int id)
     {    	
     	String message = "";
     	
     	switch (id)
     	{
-    	case (JOURNEY_FINISHED):
-    		message = "You have finished your journey";break;
+    		case (JOURNEY_FINISHED):
+    			message = "You have finished your journey";break;
     		
-    	case (ROUTE_CANNOT_BE_FOUND_ERROR):
-    		message = "Route cannot be found, please try again";break;
+    		case (ROUTE_CANNOT_BE_FOUND_ERROR):
+    			message = "Route cannot be found, please try again";break;
+    			
+    		case (DIRECTION_CANNOT_BE_UNDERSTOOD_ERROR):
+    			message = "Cannot understand the next direction";break;
     		
-    	default:
-    		throw new RuntimeException("Unknown dialog ID: " + id);
-    		
+    		default:
+    			// Coding error
+    			throw new RuntimeException("Unknown dialog ID: " + id);    		
     	}
     	
+    	// Build and display the pop-up
   		AlertDialog.Builder builder = new AlertDialog.Builder(this);
     	builder.setMessage(message)
     		       .setCancelable(false)
@@ -160,24 +156,51 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		return builder.create();
     }
     
+    public void endJourney(View v){ finishJourney();}
+    
+    public void restartJourney()
+    {
+    	// Force use of current location by removing existing start location
+    	startString = "";
+    	runOnUiThread(new Runnable(){ public void run()
+		{
+    		startNavigation(null);
+		}});
+    }
+    
+    /** Called when the user asks to start navigation - calculates and displays the journey. **/
     public void startNavigation(View v)
     {    	   	
         final EditText startText  = (EditText)findViewById(R.id.start_entry);
         final EditText endText    = (EditText)findViewById(R.id.end_entry);        
         
+        // If this is the second subsequent journey, we will have stopped asking for location info, start again
+        locationHandler.start();
+        
     	// Get the start and end point
-    	String startString = "not-found";
     	if (startText != null)
     	{
     		startString = startText.getText().toString();
-    	}        
+    	}   
     	
-    	String endString = "not-found";
+    	// Try to use current location if no start has been provided
+    	if (startString.equals(""))
+    	{
+    		if (locationHandler.getCurrentLocation() != null)
+    		{    			
+    			startString = String.valueOf(locationHandler.getCurrentLocation().getLatitude()) + "," + String.valueOf(locationHandler.getCurrentLocation().getLongitude());
+    			Utils.makeLog("Using Current location: " + startString);
+    		}   
+    		else
+    		{
+    			Utils.makeLog("Current location cannot be found");
+    		}
+    	}
+    	
     	if (endText != null)
     	{
     		endString = endText.getText().toString();
-    	}    	      	
-
+    	} 
 
 		try 
 		{
@@ -192,6 +215,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 			// Switch to the navigation view
 	    	setContentView(R.layout.navigation_view);
 	        
+	    	// Load the labels on the navigation view so that the navigation thread can update them.
 	        distanceLeftLabel = (TextView)findViewById(R.id.distance_left_label);
 	        directionLabel = (TextView)findViewById(R.id.direction_label);
 	        speedLabel = (TextView)findViewById(R.id.speed_label);
@@ -200,7 +224,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 			// And display the results
 	    	distanceLeftLabel.setText("Distance left: " + String.valueOf(journey.getSubsequentLegsDistance()));	
 	    	
-	    	startNavigationThread(journey, this);
+	    	startNavigationThread(journey, locationHandler);
 		} 
 		catch (RouteNotFoundException e1) 
 		{
@@ -208,8 +232,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		}
 		catch (DirectionException e1) 
 		{
-			// change this to day there was a problem with Google
-			displayRouteNotFoundError();
+			displayBadDirectionError();
 		}
     	catch (InterruptedException e)
     	{
@@ -233,14 +256,16 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
                     LayoutParams.WRAP_CONTENT));
         	tr.addView(tv);
         	
-            journeyStepsTable.addView(tr, new TableLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT));
+            journeyStepsTable.addView(tr, 
+            		                  new TableLayout.LayoutParams(
+                                        LayoutParams.WRAP_CONTENT,
+                                        LayoutParams.WRAP_CONTENT));
     	}    			
     	
     	setContentView(journeyStepsTable);
     }
 
+    /** Start a new thread to monitor current location and decide when instructions need to be issued or loaded **/
 	private void startNavigationThread(Journey journey, LocationReader lr) throws InterruptedException
     {        
         NavigationThread nt = new NavigationThread(lr, journey, this);
@@ -248,6 +273,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
         t.start();
     }
     
+	/** Calculate the journey from a start and end point **/
     private Journey calculateJourney(String start, String end) throws RouteNotFoundException, DirectionException
     {
    		GoogleDirectionsQuery q = new GoogleDirectionsQuery(start, end);
@@ -257,49 +283,24 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
    		Journey journey = p.parseJSONDirections(directions);
     	
    		return journey;
-    }
-
-    // LOCATION READER METHODS
-
-	@Override
-	public CoOrdinate getCurrentLocation() 
-	{
-		CoOrdinate c = null;
-		if (gLocation != null)
-		{
-			c = new CoOrdinate(gLocation.getLongitude(), gLocation.getLatitude());
-		}
-		return c;
-	}
-	
-	// LOCATION LISTENER METHODS
-	
-	@Override
-	public void onLocationChanged(Location location) 
-	{
-		gLocation = location;	
-		Utils.makeLog("New location " + location.getLongitude() + ", " + location.getLatitude());
-	}
-
-	@Override
-	public void onProviderDisabled(String provider) 
-	{
-		Utils.makeLog("onProviderDisabled " + provider);
-	}
-
-	@Override
-	public void onProviderEnabled(String provider) 
-	{
-		Utils.makeLog("onProviderEnabled " + provider);		
-	}
-
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) 
-	{
-		Utils.makeLog("onStatusChanged " + provider);	
-	}
+    }    
 
 	// NAVIGATION ACTIVITY METHODS    
+    
+	public void readOutJourneyInformation(View v){readOutJourneyInformation();}
+	public void readOutJourneyInformation()
+	{		
+		if (journey != null)
+		{
+			speak(journey.getSummary());
+		}
+		else
+		{
+			Utils.makeLog("Tried to read out journey information when there is no journey");
+		}		
+	}
+	
+    /** Issue a direction to the user. */
     public boolean issueDirection(JourneyLeg jl)
     {    	
     	boolean issuedCommand = true;
@@ -320,24 +321,31 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
     	return issuedCommand;	    
     }
     
+    /** Issue the proximity alert to the user. **/
     public void startProximityAlert()
     {
     	Utils.makeLog("startProximityAlert");
     	speak(PROXIMITY_ALERT_STRING);
     	Vibration.startProximityAlert(vibrator);
-    }
-    
+    }    
+        
+    /** Tell the user that the journey has finished. **/
     public void finishJourney()
     {
     	runOnUiThread(new Runnable(){ public void run()
     		{
+    			speak(ARRIVED_AT_DESTINATION_STRING);
     			Vibration.startDirectionVibration(Direction.ARRIVED, vibrator);
         		displayStartView(null);
         		showDialog(JOURNEY_FINISHED);
-    		}});    	
+        		locationHandler.stop();
+            	displayStartView(null);
+            	journey = null;
+    		}});      	
     }
     
 	@Override
+	/** Set the current direction. **/
 	public void setDirection(String direction) 
 	{
 		if (directionLabel != null)
@@ -348,6 +356,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	}
 
 	@Override
+	/** Set the distance travelled. **/
 	public void setDistanceTravelled(String distanceTravelled) 
 	{
 		if (distanceTravelledLabel != null)
@@ -359,6 +368,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	}
 
 	@Override
+	/** Set the distance left. **/
 	public void setDistanceLeft(String distanceLeft) 
 	{
 		if (distanceLeftLabel != null)
@@ -369,6 +379,7 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 	}
 
 	@Override
+	/** Set the current speed. **/
 	public void setSpeed(String speed) 
 	{
 		if (speedLabel != null)
@@ -378,17 +389,22 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		}				
 	}
 	
-	private void displayRouteNotFoundError()
-	{
-		showDialog(ROUTE_CANNOT_BE_FOUND_ERROR);
-	}
+	// ERROR DIALOGS
+	private void displayRouteNotFoundError(){showDialog(ROUTE_CANNOT_BE_FOUND_ERROR);}
+	private void displayBadDirectionError(){showDialog(DIRECTION_CANNOT_BE_UNDERSTOOD_ERROR);}
 	
-	//HELP VIEW METHODS
+	// HELP VIEW METHODS
 	public void demoLeftTurn(View v)   {Vibration.startDirectionVibration(Direction.TURN_LEFT,    vibrator);speak(Direction.TURN_LEFT.toString());}	
 	public void demoRightTurn(View v)  {Vibration.startDirectionVibration(Direction.TURN_RIGHT,   vibrator);speak(Direction.TURN_RIGHT.toString());}
 	public void demoSlightLeft(View v) {Vibration.startDirectionVibration(Direction.SLIGHT_LEFT,  vibrator);speak(Direction.SLIGHT_LEFT.toString());}	
 	public void demoSlightRight(View v){Vibration.startDirectionVibration(Direction.SLIGHT_RIGHT, vibrator);speak(Direction.SLIGHT_RIGHT.toString());}
-	
+	public void demoFirstExit(View v){demoExit(v, 1);}
+	public void demoSecondExit(View v){demoExit(v, 2);}
+	public void demoThirdExit(View v){demoExit(v, 3);}
+	public void demoFourthExit(View v){demoExit(v, 4);}
+	public void demoFifthExit(View v){demoExit(v, 5);}
+	public void demoSixthExit(View v){demoExit(v, 6);}
+
 	public void demoProximity(View v)
 	{
 		speak(PROXIMITY_ALERT_STRING);
@@ -396,13 +412,6 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		Vibration.startProximityAlert(vibrator);
 		Vibration.stopProximityAlert();		
 	}
-	
-	public void demoFirstExit(View v){demoExit(v, 1);}
-	public void demoSecondExit(View v){demoExit(v, 2);}
-	public void demoThirdExit(View v){demoExit(v, 3);}
-	public void demoFourthExit(View v){demoExit(v, 4);}
-	public void demoFifthExit(View v){demoExit(v, 5);}
-	public void demoSixthExit(View v){demoExit(v, 6);}
 	
 	public void demoExit(View v, int exitNumber)
 	{
@@ -416,9 +425,6 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 			case(4):d = Direction.FOURTH_EXIT;break;
 			case(5):d = Direction.FIFTH_EXIT;break;
 			case(6):d = Direction.SIXTH_EXIT;break;
-			case(7):d = Direction.SEVENTH_EXIT;break;
-			case(8):d = Direction.EIGHT_EXIT;break;
-			case(9):d = Direction.NINTH_EXIT;break;
 		
 			default:
 				throw new RuntimeException("Don't recognise the exit number: " + exitNumber);
@@ -427,36 +433,31 @@ public class BikeDirectActivity extends Activity implements LocationListener, Lo
 		Vibration.startDirectionVibration(d, vibrator);
 		speak(d.toString());
 	}
+	
+	private void speak(String speech){ttsHandler.speak(speech);}
 		
-	//CHANGE VIEW METHODS
+	// CHANGE VIEW METHODS
 	public void displayJourneyOverView(View v){setContentView(journeyStepsTable);}
     public void displayHelpView(View v){setContentView(R.layout.help_view);}     
-    public void displayStartView(View v){setContentView(R.layout.start_view);}    	
-    public void displayNavigationView(View v){setContentView(R.layout.navigation_view);}
-
-	@Override
-	//TTS is ready
-	public void onInit(int arg0) 
-	{
-		Utils.makeLog("TTS is ready");
-		tts.setLanguage(Locale.UK);
-		ttsReady = true;
-	}
-	
-	private void speak(String speech)
-	{
-		if (ttsReady)
-		{
-			tts.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
-		}
-		else
-		{
-			Utils.makeLog("Tried to speak before TTS was ready");
-		}
-	}
-	
-	public void readOutJourneyInformation(View v)
-	{
-		speak(journey.getSummary());
-	}
+    public void displayStartView(View v){setContentView(R.layout.start_view);}   
+    
+    public void displayNavigationView(View v)
+    {
+    	// The values from teh screen may be lost when we redraw, so keep a note of them.
+    	String speed = (String)speedLabel.getText();
+    	String distanceLeft = (String)distanceLeftLabel.getText();
+    	String distanceTravelled = (String)distanceTravelledLabel.getText();
+    	String direction = (String)directionLabel.getText(); 
+    	
+    	setContentView(R.layout.navigation_view);
+        distanceLeftLabel = (TextView)findViewById(R.id.distance_left_label);
+        directionLabel = (TextView)findViewById(R.id.direction_label);
+        speedLabel = (TextView)findViewById(R.id.speed_label);
+        distanceTravelledLabel = (TextView)findViewById(R.id.distance_travelled_label);
+        
+    	setSpeed(speed);
+    	setDistanceLeft(distanceLeft);  	
+    	setDirection(direction);
+    	setDistanceTravelled(distanceTravelled);
+    }
 }

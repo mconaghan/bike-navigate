@@ -79,7 +79,7 @@ public class Journey
 		
 		summary.append(getCurrentLeg().getSimpleInstruction());
 		summary.append(".");
-		summary.append("In total you have " + distance + "metres still to go");
+		summary.append("In total you have " + getTotalDistanceLeft() + "metres still to go");
 		
 		return summary.toString();
 	}

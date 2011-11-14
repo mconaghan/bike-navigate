@@ -72,5 +72,8 @@ public class FileLocationReader implements LocationReader
 		
 		return c;
 	}
+	
+	public void stop(){}
+	public void start(){}
 
 }

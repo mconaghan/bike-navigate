@@ -65,8 +65,10 @@ public class Vibration implements Runnable
 			loopForever = true;
 			proximityAlert = this;
 			
+			Utils.makeLog("DEBUG Starting vibration");
 			Thread t = new Thread(this);
-			t.start();			
+			t.start();		
+			Utils.makeLog("DEBUG Started vibration");
 		}		
 	}
 	
@@ -83,6 +85,7 @@ public class Vibration implements Runnable
 		
 		while(doLoop)
 		{
+			Utils.makeLog("DEBUG vibration loop");
 			vibrator.vibrate(pattern, -1);
 			
 			doLoop = loopForever && (proximityAlert == this);

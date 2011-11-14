@@ -43,20 +43,37 @@
          android:layout_weight="1"
          android:text="@string/travelledString"
          android:textAppearance="?android:attr/textAppearanceLarge" />
-
-     <Button
-         android:id="@+id/button1"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_weight="1"
-         android:onClick="displayJourneyOverView"
-         android:text="@string/journeyOverviewString" />
+
      <Button
          android:id="@+id/button2"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
+         android:layout_width="match_parent"
+         android:layout_height="71dp"
          android:layout_weight="1"
          android:onClick="readOutJourneyInformation"
          android:text="@string/readOutJourneyString" />
+
+     <LinearLayout
+         android:id="@+id/linearLayout1"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:layout_weight="1" >
+
+         <Button
+             android:id="@+id/button3"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"
+             android:onClick="endJourney"
+             android:text="end journey" />
+
+         <Button
+             android:id="@+id/button1"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_weight="1"
+             android:onClick="displayJourneyOverView"
+             android:text="@string/journeyOverviewString" />
+
+     </LinearLayout>
 
 </LinearLayout>

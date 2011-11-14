@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">BikeDirect</string>
     <string name="howToUseButtonString">How to use</string>
-    <string name="startLocationString">start location</string>
-    <string name="endLocationString">end location</string>
+    <string name="startLocationString">current location</string>
+    <string name="endLocationString">enter end location</string>
     <string name="toString">to:</string>
     <string name="fromString">from:</string>
     <string name="takeMeThereString">take me there!</string>

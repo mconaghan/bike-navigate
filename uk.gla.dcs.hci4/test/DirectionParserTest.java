@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.List;
 import src.BikeDirectActivity;
 import src.Direction;
-import src.DirectionException;
 import src.Journey;
 import src.JourneyLeg;
 import src.GoogleDirectionsJSONParser;
@@ -18,6 +17,7 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 	
 	private AssetManager am;
 	private String testdata1;
+	private String testdata2;
 	
 	public DirectionParserTest() 
 	{
@@ -32,7 +32,10 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
         BikeDirectActivity activity = this.getActivity();
         am = activity.getAssets();
         InputStream is = am.open("g206ez-g767rn");        
-        testdata1 = Utils.convertStreamToString(is);       
+        testdata1 = Utils.convertStreamToString(is);
+        
+        is = am.open("test-journey");        
+        testdata2 = Utils.convertStreamToString(is);
     }
 	
 	/**
@@ -55,18 +58,7 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 		assertEquals(785, directions.get(6).getDistanceLeftMetres());
 		assertEquals(7828, directions.get(7).getDistanceLeftMetres());
 		assertEquals(249, directions.get(8).getDistanceLeftMetres());
-		assertEquals(262, directions.get(9).getDistanceLeftMetres());
-		
-		//First direction is not understood, expect an exception
-		try
-		{
-			Direction.parseDirection(directions.get(0).getFullInstructions());
-			fail("Should have failed to parse");
-		}
-		catch (DirectionException e)
-		{
-			//expected
-		}
+		assertEquals(262, directions.get(9).getDistanceLeftMetres());		
 		
 		assertEquals(Direction.TURN_LEFT, Direction.parseDirection(directions.get(1).getFullInstructions()));		
 		assertEquals(Direction.SLIGHT_RIGHT, Direction.parseDirection(directions.get(2).getFullInstructions()));
@@ -76,17 +68,6 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 		assertEquals(Direction.TURN_LEFT, Direction.parseDirection(directions.get(6).getFullInstructions()));
 		assertEquals(Direction.TURN_RIGHT, Direction.parseDirection(directions.get(7).getFullInstructions()));
 		assertEquals(Direction.TURN_LEFT, Direction.parseDirection(directions.get(8).getFullInstructions()));
-		
-		//Last direction is not understood, expect an exception
-		try
-		{
-			Direction.parseDirection(directions.get(9).getFullInstructions());
-			fail("Should have failed to parse");
-		}
-		catch (DirectionException e)
-		{
-			//expected
-		}
 		
 		int totalDistance = 0;
 		
@@ -108,5 +89,25 @@ public class DirectionParserTest extends ActivityInstrumentationTestCase2<BikeDi
 		double totalDiff = totalDistance - journey.getSubsequentLegsDistance();
 		assertEquals(true, totalDiff < 500);
 		assertEquals(true, totalDiff > -500);
+	}
+	
+	/**
+	 * Test parsing some pre-fetched JSON directions.
+	 */
+	public void testParsing2() throws Exception
+	{		
+		DirectionParser p = new GoogleDirectionsJSONParser();
+		Journey journey = p.parseJSONDirections(testdata2);
+		List<JourneyLeg> directions = journey.getLegs();
+		assertEquals(4, directions.size());
+		
+		assertEquals(1115, directions.get(0).getDistanceLeftMetres());
+		assertEquals(2095, directions.get(1).getDistanceLeftMetres());
+		assertEquals(3931, directions.get(2).getDistanceLeftMetres());
+		assertEquals(160, directions.get(3).getDistanceLeftMetres());
+				
+		assertEquals(Direction.THIRD_EXIT, Direction.parseDirection(directions.get(1).getFullInstructions()));		
+		assertEquals(Direction.SECOND_EXIT, Direction.parseDirection(directions.get(2).getFullInstructions()));
+		assertEquals(Direction.FIRST_EXIT, Direction.parseDirection(directions.get(3).getFullInstructions()));
 	}
 }

@@ -1,0 +1,141 @@
+{
+   "routes" : [
+      {
+         "bounds" : {
+            "northeast" : {
+               "lat" : 55.80657000000001,
+               "lng" : -4.153190
+            },
+            "southwest" : {
+               "lat" : 55.750750,
+               "lng" : -4.186790
+            }
+         },
+         "copyrights" : "Map data ©2011 Tele Atlas",
+         "legs" : [
+            {
+               "distance" : {
+                  "text" : "7.3 km",
+                  "value" : 7301
+               },
+               "duration" : {
+                  "text" : "10 mins",
+                  "value" : 605
+               },
+               "end_address" : "Springhall, nr East Kilbride Rd, Cambuslang, South Lanarkshire G73, UK",
+               "end_location" : {
+                  "lat" : 55.80657000000001,
+                  "lng" : -4.186790
+               },
+               "start_address" : "Calderglen Country Park, East Kilbride, South Lanarkshire G74, UK",
+               "start_location" : {
+                  "lat" : 55.750750,
+                  "lng" : -4.153190
+               },
+               "steps" : [
+                  {
+                     "distance" : {
+                        "text" : "1.1 km",
+                        "value" : 1115
+                     },
+                     "duration" : {
+                        "text" : "1 min",
+                        "value" : 69
+                     },
+                     "end_location" : {
+                        "lat" : 55.757550,
+                        "lng" : -4.165660
+                     },
+                     "html_instructions" : "Head \u003cb\u003enorth\u003c/b\u003e on \u003cb\u003eStrathaven Rd/A726\u003c/b\u003e",
+                     "polyline" : {
+                        "points" : "eygsIldjXs@Tc@Vs@`@cAv@QPeAfAIHCJ{ApCAD{@rBa@`A_@z@mBpEq@jBc@dAeGtNeErJUp@]z@K\\cAxDi@jD?zA"
+                     },
+                     "start_location" : {
+                        "lat" : 55.750750,
+                        "lng" : -4.153190
+                     },
+                     "travel_mode" : "DRIVING"
+                  },
+                  {
+                     "distance" : {
+                        "text" : "2.1 km",
+                        "value" : 2095
+                     },
+                     "duration" : {
+                        "text" : "3 mins",
+                        "value" : 168
+                     },
+                     "end_location" : {
+                        "lat" : 55.775330,
+                        "lng" : -4.163570
+                     },
+                     "html_instructions" : "At \u003cb\u003eBirniehill Roundabout\u003c/b\u003e, take the \u003cb\u003e3rd\u003c/b\u003e exit onto \u003cb\u003eKingsway/A725\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eGo through 1 roundabout\u003c/div\u003e",
+                     "polyline" : {
+                        "points" : "ucisIjrlXFRBVA`@ANI\\EHEFQJS?ICEACCQQEMCKAWa@o@S]kAo@_Ai@cCs@u@Sw@EI?WAiCFuB^sAd@MDw@ZaAd@S^CTCLENKPMFO@IAKAGEEGIM]?Q@u@NcEv@wBD_CMUEs@OqIcCiA[wBm@KEoRkFq@M_@GgEs@y@GYCq@Ga@EsAEM@MDc@X"
+                     },
+                     "start_location" : {
+                        "lat" : 55.757550,
+                        "lng" : -4.165660
+                     },
+                     "travel_mode" : "DRIVING"
+                  },
+                  {
+                     "distance" : {
+                        "text" : "3.9 km",
+                        "value" : 3931
+                     },
+                     "duration" : {
+                        "text" : "6 mins",
+                        "value" : 336
+                     },
+                     "end_location" : {
+                        "lat" : 55.80594000000001,
+                        "lng" : -4.184640
+                     },
+                     "html_instructions" : "At the roundabout, take the \u003cb\u003e2nd\u003c/b\u003e exit onto \u003cb\u003eKingsway/A749\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eContinue to follow A749\u003c/div\u003e\u003cdiv style=\"font-size:0.9em\"\u003eGo through 2 roundabouts\u003c/div\u003e",
+                     "polyline" : {
+                        "points" : "yrlsIhelXENKNMFQ?MK]m@eAUq@BwBDg@@qAJ{@HaAFyCh@eBXyAf@WNIDGPGJMFIAQOEKQ?G?SFk@VgA^mAd@a@VS\\Kb@M|@?d@GZCDCHADQNW?MGKOGOEW[[_AW_@B}Bz@YJaChA}@\\SHsA\\eDZ{@?g@?mBMYCiDy@kDg@}DImD\\eDp@oCh@gBl@_AZUHMBeCrA_KnGmD`DmClD}@zAsAfCUh@cDtIwGrRmBtFqB|Fe@fAeAzB_CzDKRgCbFGNELGPEJMZU\\[f@mFxFC?QDkAT"
+                     },
+                     "start_location" : {
+                        "lat" : 55.775330,
+                        "lng" : -4.163570
+                     },
+                     "travel_mode" : "DRIVING"
+                  },
+                  {
+                     "distance" : {
+                        "text" : "0.2 km",
+                        "value" : 160
+                     },
+                     "duration" : {
+                        "text" : "1 min",
+                        "value" : 32
+                     },
+                     "end_location" : {
+                        "lat" : 55.80657000000001,
+                        "lng" : -4.186790
+                     },
+                     "html_instructions" : "At the roundabout, take the \u003cb\u003e1st\u003c/b\u003e exit onto \u003cb\u003eCathkin Bypass\u003c/b\u003e\u003cdiv style=\"font-size:0.9em\"\u003eDestination will be on the right\u003c/div\u003e",
+                     "polyline" : {
+                        "points" : "crrsI~hpXa@Zk@lAo@bI"
+                     },
+                     "start_location" : {
+                        "lat" : 55.80594000000001,
+                        "lng" : -4.184640
+                     },
+                     "travel_mode" : "DRIVING"
+                  }
+               ],
+               "via_waypoint" : []
+            }
+         ],
+         "overview_polyline" : {
+            "points" : "eygsIldjXs@Tc@Vs@`@cAv@wAxAMT}AvC}AtDmClGuApDkMhZs@lBoAvEi@jD?zAJj@Cp@Of@WR]CIEQQEMEc@u@mAkCyAyDgAaAEaDDuB^sAd@eA`@aAd@S^Gb@Q`@MFO@UCMMIM]?gAPcEv@wBDuCSs@OqIcCaEiA{RqFqAUgEs@y@GkAKuBK[Fc@XENKNMFQ?MK]m@eAUiDHyBL}BP_GbAyAf@WNIDGPGJMFIAQOEKQ?[FsBv@mAd@a@VS\\Kb@M|@?d@K`@ENQNW?MGKOMg@[[_AW_@B}Bz@{CtAqAf@sA\\eDZcB?gCQiDy@kDg@}DImD\\uHzAkEvAeCrA_KnGmD`DmClDqCbFyD~JeKhZqB|Fe@fAeAzB_CzDsCvF[z@c@x@[f@mFxFUDkATa@Zk@lAo@bI"
+         },
+         "summary" : "Kingsway and A749",
+         "warnings" : [],
+         "waypoint_order" : []
+      }
+   ],
+   "status" : "OK"
+}

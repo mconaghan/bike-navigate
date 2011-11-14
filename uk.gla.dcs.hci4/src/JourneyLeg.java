@@ -28,13 +28,19 @@ public class JourneyLeg
 	}
 	
 	public int getDistanceLeftMetres() {return distanceLeftMetres;}
-	public int getTotalDistance() {return totalLegDistance;}
-	public int getDistanceTravelledMetres() {return (totalLegDistance - distanceLeftMetres);}
+	public int getTotalDistance() {return totalLegDistance;}	
 	public CoOrdinate getStart() {return start;}
 	public CoOrdinate getEnd() {return end;}
 	public String getFullInstructions() {return fullInstructions;}
 	public Direction getNextDirection(){return nextDirection;}
 	public Direction getDirection(){return direction;}
+	
+	public int getDistanceTravelledMetres() 
+	{
+		// Don't return a negative number
+		int distance = (totalLegDistance - distanceLeftMetres);
+		return (distance > 0 ? distance : 0);
+		}
 	
 	public String getSimpleInstruction()
 	{
